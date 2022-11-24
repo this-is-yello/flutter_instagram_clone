@@ -10,5 +10,6 @@ var theme = ThemeData(
   bottomNavigationBarTheme: BottomNavigationBarThemeData(
     backgroundColor: Colors.white,
     selectedItemColor: Colors.black,
+    unselectedItemColor: Colors.black,
   )
 );
