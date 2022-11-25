@@ -3,17 +3,30 @@ import 'package:flutter/services.dart';
 import 'package:flutter_instagram_clone/style.dart' as style;
 import 'package:http/http.dart' as http;
 import 'dart:convert';
-// import 'package:flutter/rendering.dart'; // 스크롤 관련 함수
+import 'package:flutter/rendering.dart'; // 스크롤 관련 함수
+import 'package:image_picker/image_picker.dart';
+import 'dart:io';
+import 'package:provider/provider.dart';
+
 
 void main() {
   runApp(
-    MaterialApp(
-      theme: style.theme,
-      home: MyApp()
+    ChangeNotifierProvider(
+      create: (c) => Store(),
+      child: MaterialApp(
+        theme: style.theme,
+        home: MyApp()
+      )
     )
   );
 }
 
+class Store extends ChangeNotifier {
+  
+}
+
+
+// ------------------------------ MyApp ----------------------------------- //
 class MyApp extends StatefulWidget {
   const MyApp({super.key});
 
@@ -31,7 +44,7 @@ class _MyAppState extends State<MyApp> {
     setState(() {
       data = result2;
     });
-    print(data);
+    // print(data);
   }
 
   addData(a) {
@@ -54,14 +67,21 @@ class _MyAppState extends State<MyApp> {
         actions: [
           IconButton(
             icon: Icon(Icons.notifications_none_outlined),
-            onPressed: () {},
-          ),
-          IconButton(
-            icon: Icon(Icons.add_box_outlined),
             onPressed: () {
               Navigator.push(
                 context,
-                MaterialPageRoute(builder: (c) { return Text('New Page');})
+                MaterialPageRoute(builder: (c) { return Center(child: NotiPage());})
+              );
+            },
+          ),
+          IconButton(
+            icon: Icon(Icons.add_box_outlined),
+            onPressed: () async{
+              // var picker = ImagePicker();
+              // var image = await picker.pickImage(source: ImageSource.gallery);
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (c) => UploadPage())
               );
             },
           )
@@ -69,10 +89,6 @@ class _MyAppState extends State<MyApp> {
       ),
 
       body: [InstaHome(data: data, addData: addData), InstaShop()][tab],
-      // body: [
-      //   Center(child: Text('인스타그램 홈', style: Theme.of(context).textTheme.bodyText1)),
-      //   Center(child: Text('인스타그램 샵', style: Theme.of(context).textTheme.bodyText1))
-      // ][tab],
       
       bottomNavigationBar: BottomNavigationBar(
         onTap: (i) {
@@ -96,7 +112,8 @@ class _MyAppState extends State<MyApp> {
   }
 }
 
-// -------------------------instagram_home------------------------------ //
+
+// ------------------------------ instagram_home ----------------------------------- //
 class InstaHome extends StatefulWidget {
   const InstaHome({super.key, this.getData, this.data, this.addData});
 
@@ -117,6 +134,7 @@ class _InstaHomeState extends State<InstaHome> {
     var result3 = await http.get(Uri.parse('https://codingapple1.github.io/app/more1.json'));
     var result4 = jsonDecode(result3.body);
     widget.addData(result4);
+    // print(result4);
   }
 
   @override
@@ -124,7 +142,7 @@ class _InstaHomeState extends State<InstaHome> {
     super.initState();
     scroll.addListener(() {
       if(scroll.position.pixels == scroll.position.maxScrollExtent && yes == true) {
-        print(scroll.position.maxScrollExtent);
+        // print(scroll.position.maxScrollExtent);
         moreData();
         yes = false; 
       }
@@ -147,6 +165,14 @@ class _InstaHomeState extends State<InstaHome> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
+                    GestureDetector(
+                      child: Text(widget.data[i]['user'], style: TextStyle(fontWeight: FontWeight.w600),),
+                      onTap: () {
+                        Navigator.push(context,
+                          MaterialPageRoute(builder: (c) => ProfilePage(data: widget.data[i]))
+                        );
+                      },
+                    ),
                     Text('좋아요 ${widget.data[i]['likes']}'),
                     Text(widget.data[i]['content']),
                     Text(widget.data[i]['date']),
@@ -160,42 +186,11 @@ class _InstaHomeState extends State<InstaHome> {
     } else {
       return Text('Loading');
     }
-    
-
-    // return Scaffold(
-    //   body: ListView(
-    //     children: [
-    //       Container(
-    //         child: Column(
-    //           crossAxisAlignment: CrossAxisAlignment.start,
-    //           children: [
-    //             Center(
-    //               child: Image.asset('lib/images/bykak.jpg', width: 600)
-    //             ),
-    //             Center(
-    //               child: Container(
-    //                 padding: EdgeInsets.all(8),
-    //                 width: 600,
-    //                 child: Column(
-    //                   crossAxisAlignment: CrossAxisAlignment.start,
-    //                   children: [
-    //                     Text('좋아요 100', style: TextStyle(fontWeight: FontWeight.w900, fontSize: 16)),
-    //                     Text('글쓴이'),
-    //                     Text('글 내용')
-    //                   ]
-    //                 )
-    //               ),
-    //             ),
-    //           ]
-    //         )
-    //       ),
-    //     ]
-    //   ),
-    // );
   }
 }
 
-// -------------------------instagram_shop------------------------------ //
+
+// ------------------------------ instagram_shop ----------------------------------- //
 class InstaShop extends StatelessWidget {
   const InstaShop({super.key});
 
@@ -211,6 +206,112 @@ class InstaShop extends StatelessWidget {
           ],
         );
       },
+    );
+  }
+}
+
+
+// ------------------------------ upload_page ----------------------------------- //
+class UploadPage extends StatelessWidget {
+  const UploadPage({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        actions: [
+          TextButton(
+            child: Text('완료', style: TextStyle(color: Colors.black, fontWeight: FontWeight.w600)),
+            onPressed: () {
+              Navigator.pop(context);
+            }
+          )
+        ],
+        iconTheme: IconThemeData(color: Colors.black)
+      ),
+    );
+  }
+}
+
+
+// ------------------------------ notification_page ----------------------------------- //
+class NotiPage extends StatelessWidget {
+  const NotiPage({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        actions: [
+          TextButton(
+            child: Text('모두삭제', style: TextStyle(color: Colors.black, fontWeight: FontWeight.w600)),
+            onPressed: () {
+              Navigator.pop(context);
+            }
+          )
+        ],
+        iconTheme: IconThemeData(color: Colors.black),
+      ),
+    );
+  }
+}
+
+
+// ------------------------------ profile_page ----------------------------------- //
+class ProfilePage extends StatefulWidget {
+  const ProfilePage({super.key, this.data});
+
+  final data;
+
+  @override
+  State<ProfilePage> createState() => _ProfilePageState();
+}
+  var follow = 0;
+  var flwBtn = '팔로우';
+
+class _ProfilePageState extends State<ProfilePage> {
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Center(child: Text(widget.data['user'])),
+        actions: [
+          IconButton(
+            icon: Icon(Icons.settings, color: Colors.black,),
+            onPressed: () {
+              Navigator.pop(context);
+            }
+          )
+        ],
+        iconTheme: IconThemeData(color: Colors.black),
+      ),
+      body: Container(
+        margin: EdgeInsets.only(top: 10),
+        child: ListTile(
+          leading: Container(
+            width: 50,
+            height: 50,
+            decoration: BoxDecoration(color: Colors.black, borderRadius: BorderRadius.circular(25)),
+          ),
+          title: Text('팔로워' + ' ' + '${follow}' + '명'),
+          trailing: ElevatedButton(
+            child: Text(flwBtn),
+            onPressed: (() {
+              if(follow == 1) {
+                setState(() {
+                  follow --;
+                  flwBtn = "팔로우";
+                });
+              } else {
+                setState(() {
+                  follow ++;
+                  flwBtn = '언팔로우';
+                });
+              }
+            }),
+          ),
+        ),
+      ),
     );
   }
 }
