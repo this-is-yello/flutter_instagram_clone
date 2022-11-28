@@ -11,8 +11,11 @@ import 'package:provider/provider.dart';
 
 void main() {
   runApp(
-    ChangeNotifierProvider(
-      create: (c) => Store(),
+    MultiProvider(
+      providers: [
+        ChangeNotifierProvider(create: (c) => Store()),
+        ChangeNotifierProvider(create: (c) => Store2())
+      ],
       child: MaterialApp(
         theme: style.theme,
         home: MyApp()
@@ -21,10 +24,39 @@ void main() {
   );
 }
 
+// Provider
 class Store extends ChangeNotifier {
-  
-}
+  var follow = 0;
+  var flwBtn = '팔로우';
 
+  bool friend = false;
+
+  follower() {
+    if(friend == false) {
+      follow++;
+      flwBtn = '언팔로우';
+      friend = true;
+    } else {
+      follow--;
+      flwBtn = '팔로우';
+      friend = false;
+    }
+    notifyListeners(); //스테이트가 바뀐 걸 알려줄 때 (setState)
+  }
+}
+class Store2 extends ChangeNotifier {
+  var tab = 0;
+
+  var profileImg = [];
+
+  getProfile() async{
+    var result5 = await http.get(Uri.parse('https://codingapple1.github.io/app/profile.json'));
+    var result6 = jsonDecode(result5.body);
+    profileImg = result6;
+    print(result6);
+    notifyListeners();
+  }
+}
 
 // ------------------------------ MyApp ----------------------------------- //
 class MyApp extends StatefulWidget {
@@ -35,7 +67,6 @@ class MyApp extends StatefulWidget {
 }
 
 class _MyAppState extends State<MyApp> {
-  var tab = 0;
   var data = [];
 
   getData() async{
@@ -88,13 +119,13 @@ class _MyAppState extends State<MyApp> {
         ],
       ),
 
-      body: [InstaHome(data: data, addData: addData), InstaShop()][tab],
+      body: [InstaHome(data: data, addData: addData), InstaShop()][context.watch<Store2>().tab],
       
       bottomNavigationBar: BottomNavigationBar(
         onTap: (i) {
           print(i);
           setState(() {
-            tab = i;
+            context.watch<Store2>().tab = i;
           });
         },
         items: [
@@ -266,10 +297,17 @@ class ProfilePage extends StatefulWidget {
   @override
   State<ProfilePage> createState() => _ProfilePageState();
 }
-  var follow = 0;
-  var flwBtn = '팔로우';
+
+
 
 class _ProfilePageState extends State<ProfilePage> {
+
+  @override
+  void initState() {
+    super.initState();
+    context.read<Store2>().getProfile();
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -288,26 +326,17 @@ class _ProfilePageState extends State<ProfilePage> {
       body: Container(
         margin: EdgeInsets.only(top: 10),
         child: ListTile(
-          leading: Container(
-            width: 50,
-            height: 50,
-            decoration: BoxDecoration(color: Colors.black, borderRadius: BorderRadius.circular(25)),
+          leading: CircleAvatar( //동그란 이미지를 넣을 때
+            radius: 50,
+            backgroundColor: Colors.black,
           ),
-          title: Text('팔로워' + ' ' + '${follow}' + '명'),
+
+          title: Text('팔로워 ${context.watch<Store>().follow} 명'),
+
           trailing: ElevatedButton(
-            child: Text(flwBtn),
+            child: Text(context.watch<Store>().flwBtn),
             onPressed: (() {
-              if(follow == 1) {
-                setState(() {
-                  follow --;
-                  flwBtn = "팔로우";
-                });
-              } else {
-                setState(() {
-                  follow ++;
-                  flwBtn = '언팔로우';
-                });
-              }
+              context.read<Store>().follower();
             }),
           ),
         ),
