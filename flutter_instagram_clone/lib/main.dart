@@ -7,6 +7,7 @@ import 'package:flutter/rendering.dart'; // 스크롤 관련 함수
 import 'package:image_picker/image_picker.dart';
 import 'dart:io';
 import 'package:provider/provider.dart';
+import 'package:flutter_instagram_clone/notification.dart';
 
 
 void main() {
@@ -87,12 +88,19 @@ class _MyAppState extends State<MyApp> {
   @override
   void initState() {
     super.initState();
+    initNotification(context);
     getData();
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      floatingActionButton: FloatingActionButton(
+        child: Text('알림'),
+        onPressed: (() {
+          showNotification();
+        }),
+      ),
       appBar: AppBar(
         title: Text('Instagram'),
         actions: [
@@ -298,8 +306,6 @@ class ProfilePage extends StatefulWidget {
   State<ProfilePage> createState() => _ProfilePageState();
 }
 
-
-
 class _ProfilePageState extends State<ProfilePage> {
 
   @override
@@ -323,22 +329,56 @@ class _ProfilePageState extends State<ProfilePage> {
         ],
         iconTheme: IconThemeData(color: Colors.black),
       ),
-      body: Container(
-        margin: EdgeInsets.only(top: 10),
-        child: ListTile(
-          leading: CircleAvatar( //동그란 이미지를 넣을 때
-            radius: 50,
-            backgroundColor: Colors.black,
+      body: CustomScrollView(
+        slivers: [
+          SliverToBoxAdapter(
+            child: ProfileHeader(),
           ),
+          SliverGrid(
+            delegate: SliverChildBuilderDelegate(
+              (c, i) => Container(
+                // margin: EdgeInsets.all(8),
+                child: Image.network(context.watch<Store2>().profileImg[i])
+              ),
+              childCount: context.watch<Store2>().profileImg.length
+            ),
+            gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(crossAxisCount: 2),
+          )
+        ],
+      ),
+      // body: GridView.builder(
+      //   gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(crossAxisCount: 2),
+      //   itemBuilder:(c, i) {
+      //     return Container(
+      //       color: Colors.grey
+      //     );
+      //   },
+      // ),
+    );
+  }
+}
 
-          title: Text('팔로워 ${context.watch<Store>().follow} 명'),
+class ProfileHeader extends StatelessWidget {
+  const ProfileHeader({super.key});
 
-          trailing: ElevatedButton(
-            child: Text(context.watch<Store>().flwBtn),
-            onPressed: (() {
-              context.read<Store>().follower();
-            }),
-          ),
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      margin: EdgeInsets.fromLTRB(0, 10, 0, 10),
+      child: ListTile(
+        leading: CircleAvatar( //동그란 이미지를 넣을 때
+          // radius: 50,
+          // backgroundColor: Colors.black,
+          backgroundImage: AssetImage('lib/images/bykak.jpg'),
+        ),
+
+        title: Text('팔로워 ${context.watch<Store>().follow} 명'),
+
+        trailing: ElevatedButton(
+          child: Text(context.watch<Store>().flwBtn),
+          onPressed: (() {
+            context.read<Store>().follower();
+          }),
         ),
       ),
     );
