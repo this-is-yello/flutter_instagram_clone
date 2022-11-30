@@ -9,20 +9,11 @@ import 'dart:io';
 import 'package:provider/provider.dart';
 import 'package:flutter_instagram_clone/notification.dart';
 
-
 void main() {
-  runApp(
-    MultiProvider(
-      providers: [
-        ChangeNotifierProvider(create: (c) => Store()),
-        ChangeNotifierProvider(create: (c) => Store2())
-      ],
-      child: MaterialApp(
-        theme: style.theme,
-        home: MyApp()
-      )
-    )
-  );
+  runApp(MultiProvider(providers: [
+    ChangeNotifierProvider(create: (c) => Store()),
+    ChangeNotifierProvider(create: (c) => Store2())
+  ], child: MaterialApp(theme: style.theme, home: MyApp())));
 }
 
 // Provider
@@ -33,7 +24,7 @@ class Store extends ChangeNotifier {
   bool friend = false;
 
   follower() {
-    if(friend == false) {
+    if (friend == false) {
       follow++;
       flwBtn = '언팔로우';
       friend = true;
@@ -45,13 +36,15 @@ class Store extends ChangeNotifier {
     notifyListeners(); //스테이트가 바뀐 걸 알려줄 때 (setState)
   }
 }
+
 class Store2 extends ChangeNotifier {
   var tab = 0;
 
   var profileImg = [];
 
-  getProfile() async{
-    var result5 = await http.get(Uri.parse('https://codingapple1.github.io/app/profile.json'));
+  getProfile() async {
+    var result5 = await http
+        .get(Uri.parse('https://codingapple1.github.io/app/profile.json'));
     var result6 = jsonDecode(result5.body);
     profileImg = result6;
     print(result6);
@@ -70,8 +63,9 @@ class MyApp extends StatefulWidget {
 class _MyAppState extends State<MyApp> {
   var data = [];
 
-  getData() async{
-    var result = await http.get(Uri.parse('https://codingapple1.github.io/app/data.json'));
+  getData() async {
+    var result = await http
+        .get(Uri.parse('https://codingapple1.github.io/app/data.json'));
     var result2 = jsonDecode(result.body);
     setState(() {
       data = result2;
@@ -107,28 +101,26 @@ class _MyAppState extends State<MyApp> {
           IconButton(
             icon: Icon(Icons.notifications_none_outlined),
             onPressed: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(builder: (c) { return Center(child: NotiPage());})
-              );
+              Navigator.push(context, MaterialPageRoute(builder: (c) {
+                return Center(child: NotiPage());
+              }));
             },
           ),
           IconButton(
             icon: Icon(Icons.add_box_outlined),
-            onPressed: () async{
+            onPressed: () async {
               // var picker = ImagePicker();
               // var image = await picker.pickImage(source: ImageSource.gallery);
               Navigator.push(
-                context,
-                MaterialPageRoute(builder: (c) => UploadPage())
-              );
+                  context, MaterialPageRoute(builder: (c) => UploadPage()));
             },
           )
         ],
       ),
-
-      body: [InstaHome(data: data, addData: addData), InstaShop()][context.watch<Store2>().tab],
-      
+      body: [
+        InstaHome(data: data, addData: addData),
+        InstaShop()
+      ][context.watch<Store2>().tab],
       bottomNavigationBar: BottomNavigationBar(
         onTap: (i) {
           print(i);
@@ -151,7 +143,6 @@ class _MyAppState extends State<MyApp> {
   }
 }
 
-
 // ------------------------------ instagram_home ----------------------------------- //
 class InstaHome extends StatefulWidget {
   const InstaHome({super.key, this.getData, this.data, this.addData});
@@ -165,12 +156,12 @@ class InstaHome extends StatefulWidget {
 }
 
 class _InstaHomeState extends State<InstaHome> {
-
   var scroll = ScrollController();
   bool yes = true;
 
   moreData() async {
-    var result3 = await http.get(Uri.parse('https://codingapple1.github.io/app/more1.json'));
+    var result3 = await http
+        .get(Uri.parse('https://codingapple1.github.io/app/more1.json'));
     var result4 = jsonDecode(result3.body);
     widget.addData(result4);
     // print(result4);
@@ -180,54 +171,58 @@ class _InstaHomeState extends State<InstaHome> {
   void initState() {
     super.initState();
     scroll.addListener(() {
-      if(scroll.position.pixels == scroll.position.maxScrollExtent && yes == true) {
+      if (scroll.position.pixels == scroll.position.maxScrollExtent &&
+          yes == true) {
         // print(scroll.position.maxScrollExtent);
         moreData();
-        yes = false; 
+        yes = false;
       }
     });
   }
 
   @override
   Widget build(BuildContext context) {
-    if(widget.data.isNotEmpty) {
+    if (widget.data.isNotEmpty) {
       return ListView.builder(
-        controller: scroll,
-        itemCount: widget.data.length,
-        itemBuilder: (context, i) {
-          return Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Image.network(widget.data[i]['image']),
-              Container(
-                padding: EdgeInsets.all(12),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    GestureDetector(
-                      child: Text(widget.data[i]['user'], style: TextStyle(fontWeight: FontWeight.w600),),
-                      onTap: () {
-                        Navigator.push(context,
-                          MaterialPageRoute(builder: (c) => ProfilePage(data: widget.data[i]))
-                        );
-                      },
-                    ),
-                    Text('좋아요 ${widget.data[i]['likes']}'),
-                    Text(widget.data[i]['content']),
-                    Text(widget.data[i]['date']),
-                  ],
-                ),
-              )
-            ],
-          );
-        } 
-      );
+          controller: scroll,
+          itemCount: widget.data.length,
+          itemBuilder: (context, i) {
+            return Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Image.network(widget.data[i]['image']),
+                Container(
+                  padding: EdgeInsets.all(12),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      GestureDetector(
+                        child: Text(
+                          widget.data[i]['user'],
+                          style: TextStyle(fontWeight: FontWeight.w600),
+                        ),
+                        onTap: () {
+                          Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                  builder: (c) =>
+                                      ProfilePage(data: widget.data[i])));
+                        },
+                      ),
+                      Text('좋아요 ${widget.data[i]['likes']}'),
+                      Text(widget.data[i]['content']),
+                      Text(widget.data[i]['date']),
+                    ],
+                  ),
+                )
+              ],
+            );
+          });
     } else {
       return Text('Loading');
     }
   }
 }
-
 
 // ------------------------------ instagram_shop ----------------------------------- //
 class InstaShop extends StatelessWidget {
@@ -239,16 +234,12 @@ class InstaShop extends StatelessWidget {
       itemCount: 100,
       itemBuilder: (context, j) {
         return Column(
-          children: [
-            Text('샵입니다'),
-            Text('${j}')
-          ],
+          children: [Text('샵입니다'), Text('${j}')],
         );
       },
     );
   }
 }
-
 
 // ------------------------------ upload_page ----------------------------------- //
 class UploadPage extends StatelessWidget {
@@ -257,21 +248,18 @@ class UploadPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        actions: [
-          TextButton(
-            child: Text('완료', style: TextStyle(color: Colors.black, fontWeight: FontWeight.w600)),
+      appBar: AppBar(actions: [
+        TextButton(
+            child: Text('완료',
+                style: TextStyle(
+                    color: Colors.black, fontWeight: FontWeight.w600)),
             onPressed: () {
               Navigator.pop(context);
-            }
-          )
-        ],
-        iconTheme: IconThemeData(color: Colors.black)
-      ),
+            })
+      ], iconTheme: IconThemeData(color: Colors.black)),
     );
   }
 }
-
 
 // ------------------------------ notification_page ----------------------------------- //
 class NotiPage extends StatelessWidget {
@@ -283,18 +271,18 @@ class NotiPage extends StatelessWidget {
       appBar: AppBar(
         actions: [
           TextButton(
-            child: Text('모두삭제', style: TextStyle(color: Colors.black, fontWeight: FontWeight.w600)),
-            onPressed: () {
-              Navigator.pop(context);
-            }
-          )
+              child: Text('모두삭제',
+                  style: TextStyle(
+                      color: Colors.black, fontWeight: FontWeight.w600)),
+              onPressed: () {
+                Navigator.pop(context);
+              })
         ],
         iconTheme: IconThemeData(color: Colors.black),
       ),
     );
   }
 }
-
 
 // ------------------------------ profile_page ----------------------------------- //
 class ProfilePage extends StatefulWidget {
@@ -307,7 +295,6 @@ class ProfilePage extends StatefulWidget {
 }
 
 class _ProfilePageState extends State<ProfilePage> {
-
   @override
   void initState() {
     super.initState();
@@ -321,11 +308,13 @@ class _ProfilePageState extends State<ProfilePage> {
         title: Center(child: Text(widget.data['user'])),
         actions: [
           IconButton(
-            icon: Icon(Icons.settings, color: Colors.black,),
-            onPressed: () {
-              Navigator.pop(context);
-            }
-          )
+              icon: Icon(
+                Icons.settings,
+                color: Colors.black,
+              ),
+              onPressed: () {
+                Navigator.pop(context);
+              })
         ],
         iconTheme: IconThemeData(color: Colors.black),
       ),
@@ -336,13 +325,13 @@ class _ProfilePageState extends State<ProfilePage> {
           ),
           SliverGrid(
             delegate: SliverChildBuilderDelegate(
-              (c, i) => Container(
-                // margin: EdgeInsets.all(8),
-                child: Image.network(context.watch<Store2>().profileImg[i])
-              ),
-              childCount: context.watch<Store2>().profileImg.length
-            ),
-            gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(crossAxisCount: 2),
+                (c, i) => Container(
+                    // margin: EdgeInsets.all(8),
+                    child:
+                        Image.network(context.watch<Store2>().profileImg[i])),
+                childCount: context.watch<Store2>().profileImg.length),
+            gridDelegate:
+                SliverGridDelegateWithFixedCrossAxisCount(crossAxisCount: 2),
           )
         ],
       ),
@@ -366,14 +355,13 @@ class ProfileHeader extends StatelessWidget {
     return Container(
       margin: EdgeInsets.fromLTRB(0, 10, 0, 10),
       child: ListTile(
-        leading: CircleAvatar( //동그란 이미지를 넣을 때
+        leading: CircleAvatar(
+          //동그란 이미지를 넣을 때
           // radius: 50,
           // backgroundColor: Colors.black,
           backgroundImage: AssetImage('lib/images/bykak.jpg'),
         ),
-
         title: Text('팔로워 ${context.watch<Store>().follow} 명'),
-
         trailing: ElevatedButton(
           child: Text(context.watch<Store>().flwBtn),
           onPressed: (() {
